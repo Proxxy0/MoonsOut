@@ -59,3 +59,10 @@ gammacorrected = adjust_gamma(dst,1.2)
 cv2.imwrite('gamma.png',gammacorrected)
 normalized3 = cv2.normalize(gammacorrected, None, 0, 255, cv2.NORM_MINMAX)
 cv2.imwrite('normalized3.png', normalized3)
+
+
+imginv = cv2.bitwise_not(dst)
+gc = adjust_gamma(imginv, 0.5)
+gcinv2 = cv2.bitwise_not(gc)
+
+cv2.imwrite('dubinvgc.png', gcinv2)
