@@ -5,7 +5,7 @@ import numpy as np
 camera = cv2.VideoCapture(0)
 images = []
 tic = datetime.datetime.now()
-for i in range(10):
+for i in range(200):
 	return_value, image = camera.read()
 	images.append(image)
 	#cv2.imwrite('opencv'+str(i)+'.png', image)
@@ -20,7 +20,7 @@ for i in range(len(images)):
 		alpha = 1.0/(i + 1)
 		beta = 1.0 - alpha
 		dst = cv2.addWeighted(images[i], alpha, dst, beta, 0.0)
- 
+
 # Save blended image
 print(str(toc-tic))
 cv2.imwrite('firstimg.png',images[0])
@@ -43,3 +43,19 @@ normalized2 = cv2.normalize(new_image, None, 0, 255, cv2.NORM_MINMAX)
 
 cv2.imwrite('normalized.png',normalized)
 cv2.imwrite('normalized2.png', normalized2)
+
+
+
+#gamma code snippet
+def adjust_gamma(image, gamma=1.0):
+
+   invGamma = 1.0 / gamma
+   table = np.array([((i / 255.0) ** invGamma) * 255
+      for i in np.arange(0, 256)]).astype("uint8")
+
+   return cv2.LUT(image, table)
+
+gammacorrected = adjust_gamma(dst,1.2)
+cv2.imwrite('gamma.png',gammacorrected)
+normalized3 = cv2.normalize(gammacorrected, None, 0, 255, cv2.NORM_MINMAX)
+cv2.imwrite('normalized3.png', normalized3)
