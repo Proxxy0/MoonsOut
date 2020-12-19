@@ -36,10 +36,14 @@ def show_webcam(mirror=False):
 
         normalized = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
         normalized2 = cv2.normalize(dst, None, 0, 255, cv2.NORM_MINMAX)
-        cv2.imshow('my webcam - base', img)
-        cv2.imshow('my webcam - normalized', normalized)
-        cv2.imshow('my webcam - stacked', dst)
-        cv2.imshow('my webcam - stacked normalized', normalized2)
+        #cv2.imshow('my webcam - base', img)
+        #cv2.imshow('my webcam - normalized', normalized)
+        top = np.concatenate((img, normalized), axis=1)
+        bottom = np.concatenate((dst, normalized2), axis=1)
+        grid = np.concatenate((top, bottom), axis=0)
+        cv2.imshow("Nightvision", grid)
+        #cv2.imshow('my webcam - stacked', dst)
+        #cv2.imshow('my webcam - stacked normalized', normalized2)
 
         if cv2.waitKey(1) == 27:
             break  # esc to quit
