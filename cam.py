@@ -5,12 +5,13 @@ import numpy as np
 camera = cv2.VideoCapture(0)
 images = []
 tic = datetime.datetime.now()
-for i in range(200):
+for i in range(10):
 	return_value, image = camera.read()
 	images.append(image)
 	#cv2.imwrite('opencv'+str(i)+'.png', image)
-del(camera)
 toc = datetime.datetime.now()
+del(camera)
+
 
 dst = images[0]
 for i in range(len(images)):
