@@ -7,6 +7,14 @@ import cv2
 import numpy as np
 
 
+def adjust_gamma(image, gamma=1.0):
+
+   invGamma = 1.0 / gamma
+   table = np.array([((i / 255.0) ** invGamma) * 255
+      for i in np.arange(0, 256)]).astype("uint8")
+
+   return cv2.LUT(image, table)
+
 
 
 def show_webcam(mirror=False):
@@ -36,10 +44,12 @@ def show_webcam(mirror=False):
 
         normalized = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX)
         normalized2 = cv2.normalize(dst, None, 0, 255, cv2.NORM_MINMAX)
+        gc = cv2.bitwise_not(adjust_gamma(cv2.bitwise_not(img), 0.1))
+        gc2 = cv2.bitwise_not(adjust_gamma(cv2.bitwise_not(dst), 0.1))
         #cv2.imshow('my webcam - base', img)
         #cv2.imshow('my webcam - normalized', normalized)
-        top = np.concatenate((img, normalized), axis=1)
-        bottom = np.concatenate((dst, normalized2), axis=1)
+        top = np.concatenate((img, normalized, gc), axis=1)
+        bottom = np.concatenate((dst, normalized2, gc2), axis=1)
         grid = np.concatenate((top, bottom), axis=0)
         cv2.imshow("Nightvision", grid)
         #cv2.imshow('my webcam - stacked', dst)
