@@ -7,7 +7,7 @@ import urllib.request
 import cv2
 import numpy as np
 import time
-URL = "http://192.168.1.3:8080/video"
+URL = "http://192.168.1.3:8080/video" #ip from IP Webcam app
 
 
 def adjust_gamma(image, gamma=1.0):
@@ -25,11 +25,14 @@ def show_webcam(mirror=False):
     samples = []
     i=0
     cam = cv2.VideoCapture(URL)
+
+    #get rescale values to deal with camera size
     ret_val, img = cam.read()
     scale_percent = 60 # percent of original size
     width = int(img.shape[1] * scale_percent / 100)
     height = int(img.shape[0] * scale_percent / 100)
     dim = (width, height)
+
     while True:
         ret_val, img = cam.read()
         if mirror:
@@ -55,16 +58,10 @@ def show_webcam(mirror=False):
         gc = cv2.bitwise_not(adjust_gamma(cv2.bitwise_not(img), 0.1))
         gc2 = cv2.bitwise_not(adjust_gamma(cv2.bitwise_not(dst), 0.1))
         normalized3 = cv2.normalize(gc2, None, 0, 255, cv2.NORM_MINMAX)
-        #cv2.imshow('my webcam - base', img)
-        #cv2.imshow('my webcam - normalized', normalized)
-        #top = np.concatenate((img, normalized, gc), axis=1)
-        #bottom = np.concatenate((dst, normalized2, gc2), axis=1)
-        top = np.concatenate((cv2.resize(dst,dim), cv2.resize(normalized2,dim)), axis = 1)
-        bottom = np.concatenate((cv2.resize(gc2,dim), cv2.resize(normalized3,dim)), axis = 1)
+        top = np.concatenate((cv2.resize(dst,dim), cv2.resize(normalized2,dim)), axis = 1) #resize and add to grid
+        bottom = np.concatenate((cv2.resize(gc2,dim), cv2.resize(normalized3,dim)), axis = 1) #resize and add to grid
         grid = np.concatenate((top, bottom), axis=0)
         cv2.imshow("Nightvision", grid)
-        #cv2.imshow('my webcam - stacked', dst)
-        #cv2.imshow('my webcam - stacked normalized', normalized2)
 
         if cv2.waitKey(1) == 27:
             break  # esc to quit
