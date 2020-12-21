@@ -18,6 +18,9 @@ import numpy as np
 '''global values'''
 URL                    = "http://192.168.1.3:8080/video" #ip webcam address
 gate                   = 1 # number of images in the sample set
+alpha				   = 3
+beta				   = 0
+gamma				   = 0.1
 font                   = cv2.FONT_HERSHEY_COMPLEX
 bottomLeftCornerOfText = (10,20)
 fontScale              = 0.7
@@ -109,35 +112,36 @@ def show_webcam(mirror=False, mobile = False):
 		i=(i+1)%gate
 
 		#stacks samples
-		dst = rescale(stack(samples),width = 400)
-
-		#compare normalized and doubly inverted images to the stack
-		gc = doubleGC(dst,0.1)
-		normalized = normalize(dst); normalizedgc = normalize(gc)
-
-		dst=putText(dst,'Stacked'); g=putText(normalized, "Normalized")
-		rm=putText(gc,"DGC");rm2=putText(normalizedgc,"DGC Normalized")
-
-		top = np.concatenate((dst, normalized), axis = 1); bottom = np.concatenate((gc, normalizedgc), axis = 1)
-		grid = np.concatenate((top, bottom), axis=0)
-		cv2.imshow("Nightvision", grid)
-
+		dst = rescale(stack(samples),width = 360)
 
 		#compare split and contrast boosted channels
-		# b,g,r = cv2.split(dst)
-		# alpha=3; beta=0
-		# r2=brightContrast(r,alpha,beta); g2=brightContrast(g,alpha,beta); b2=brightContrast(b,alpha,beta)
-		# rm = cv2.merge([b,g,r]); rm2 = cv2.merge([b2,g2,r2])
-		#
-		# r=putText(r,'Red'); g=putText(g,'Green'); b=putText(b,'Blue')
-		# r2=putText(r2,'Red | Cont. boost'); g2=putText(g2,'Green | Cont. boost'); b2=putText(b2,'Blue | Cont. boost')
-		# rm=putText(rm,"RGB Merged");rm2=putText(rm2,"Cont. boost RBG Merged")
-		#
-		# top = np.concatenate((r,g,b), axis = 1); bottom = np.concatenate((r2,g2,b2), axis = 1)
-		# grid = np.concatenate((top, bottom), axis=0)
-		# cv2.imshow("Color channels", grid)
-		# grid = np.concatenate((rm, rm2), axis=0)
-		# cv2.imshow("Color channels remerged", grid)
+		b,g,r = cv2.split(dst)
+		r2=brightContrast(r,alpha,beta); g2=brightContrast(g,alpha,beta); b2=brightContrast(b,alpha,beta)
+		r3=normalize(r); g3=normalize(g); b3=normalize(b);
+		r4=doubleGC(r,gamma); g4=doubleGC(g,gamma); b4=doubleGC(b,gamma);
+		r5=normalize(r4); g5=normalize(g4); b5=normalize(b4);
+
+		rm = cv2.merge([b,g,r]); rm2 = cv2.merge([b2,g2,r2]); rm3 = cv2.merge([b3,g3,r3]); rm4 = cv2.merge([b4,g4,r4]); rm5 = cv2.merge([b5,g5,r5])
+		dst2 = brightContrast(dst,alpha,beta); dst3 = normalize(dst); dst4 = doubleGC(dst, gamma); dst5 = normalize(dst4)
+
+		r=putText(r,'Red'); g=putText(g,'Green'); b=putText(b,'Blue')
+		r2=putText(r2,'Red | Cont. boost'); g2=putText(g2,'Green | Cont. boost'); b2=putText(b2,'Blue | Cont. boost')
+		r3=putText(r3,'Red | Normalized'); g3=putText(g3,'Green | Normalized'); b3=putText(b3,'Blue | Normalized')
+		r4=putText(r4,'Red | DGC'); g4=putText(g4,'Green | DGC'); b4=putText(b4,'Blue | DGC')
+		r5=putText(r5,'Red | DGC Norm.'); g4=putText(g5,'Green | DGC Norm.'); b4=putText(b5,'Blue | DGC Norm.')
+		rm=putText(rm,"RGB Merged");rm2=putText(rm2,"Cont. boost RBG Merged");rm3=putText(rm3,"Normalized RBG Merged");rm4=putText(rm4,"DGC RBG Merged");rm5=putText(rm5,"DGC Norm. RBG Merged")
+		dst=putText(dst,"Base");dst2=putText(dst2,"Cont. boost Base");dst3=putText(dst3,"Normalized Base");dst4=putText(dst4,"DGC Base");dst5=putText(dst5,"DGC Norm. Base")
+
+		top = np.concatenate((r,g,b), axis = 1); mid1 = np.concatenate((r2,g2,b2), axis = 1); mid2 = np.concatenate((r3,g3,b3), axis = 1)
+		mid3 = np.concatenate((r4,g4,b4), axis = 1); bot = np.concatenate((r5,g5,b5), axis = 1)
+		grid = np.concatenate((top, mid1, mid2, mid3, bot), axis=0)
+		cv2.imshow("Color channels", grid)
+
+
+		top = np.concatenate((rm,dst), axis = 1); mid1 = np.concatenate((rm2,dst2), axis = 1); mid2 = np.concatenate((rm3,dst3), axis = 1)
+		mid3 = np.concatenate((rm4,dst4), axis = 1); bot = np.concatenate((rm5,dst5), axis = 1)
+		grid = np.concatenate((top, mid1, mid2, mid3, bot), axis=0)
+		cv2.imshow("Merged comparison", grid)
 
 
 		#breakpoint
@@ -145,8 +149,9 @@ def show_webcam(mirror=False, mobile = False):
 			break  # esc to quit
 	cv2.destroyAllWindows()
 
+#main function
 def main():
-	show_webcam(mirror=False, mobile=False)
+	show_webcam(mirror=False, mobile=True)
 
 '''run on startup'''
 if __name__ == '__main__':
