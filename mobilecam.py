@@ -21,7 +21,7 @@ def adjust_gamma(image, gamma=1.0):
 
 
 def show_webcam(mirror=False):
-    gate = 2
+    gate = 1
     samples = []
     i=0
     cam = cv2.VideoCapture(URL)
