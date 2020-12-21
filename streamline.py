@@ -111,19 +111,23 @@ def show_webcam(mirror=False, mobile = False):
 		else: samples[i] = img
 		i=(i+1)%gate
 
-		#stacks samples
-		dst = rescale(stack(samples),width = 360)
 
-		#compare split and contrast boosted channels
+
+		#stacks samples
+		dst = rescale(stack(samples),height = 200)
+
+		#split channels and apply transforms
 		b,g,r = cv2.split(dst)
 		r2=brightContrast(r,alpha,beta); g2=brightContrast(g,alpha,beta); b2=brightContrast(b,alpha,beta)
 		r3=normalize(r); g3=normalize(g); b3=normalize(b);
 		r4=doubleGC(r,gamma); g4=doubleGC(g,gamma); b4=doubleGC(b,gamma);
 		r5=normalize(r4); g5=normalize(g4); b5=normalize(b4);
 
+		#remerge channels and apply transforms to base
 		rm = cv2.merge([b,g,r]); rm2 = cv2.merge([b2,g2,r2]); rm3 = cv2.merge([b3,g3,r3]); rm4 = cv2.merge([b4,g4,r4]); rm5 = cv2.merge([b5,g5,r5])
 		dst2 = brightContrast(dst,alpha,beta); dst3 = normalize(dst); dst4 = doubleGC(dst, gamma); dst5 = normalize(dst4)
 
+		#caption the feeds
 		r=putText(r,'Red'); g=putText(g,'Green'); b=putText(b,'Blue')
 		r2=putText(r2,'Red | Cont. boost'); g2=putText(g2,'Green | Cont. boost'); b2=putText(b2,'Blue | Cont. boost')
 		r3=putText(r3,'Red | Normalized'); g3=putText(g3,'Green | Normalized'); b3=putText(b3,'Blue | Normalized')
@@ -132,17 +136,22 @@ def show_webcam(mirror=False, mobile = False):
 		rm=putText(rm,"RGB Merged");rm2=putText(rm2,"Cont. boost RBG Merged");rm3=putText(rm3,"Normalized RBG Merged");rm4=putText(rm4,"DGC RBG Merged");rm5=putText(rm5,"DGC Norm. RBG Merged")
 		dst=putText(dst,"Base");dst2=putText(dst2,"Cont. boost Base");dst3=putText(dst3,"Normalized Base");dst4=putText(dst4,"DGC Base");dst5=putText(dst5,"DGC Norm. Base")
 
+
+
+		#create grid of images from split channels and show it
 		top = np.concatenate((r,g,b), axis = 1); mid1 = np.concatenate((r2,g2,b2), axis = 1); mid2 = np.concatenate((r3,g3,b3), axis = 1)
 		mid3 = np.concatenate((r4,g4,b4), axis = 1); bot = np.concatenate((r5,g5,b5), axis = 1)
 		grid = np.concatenate((top, mid1, mid2, mid3, bot), axis=0)
 		cv2.imshow("Color channels", grid)
 
-
+		#create grid of images from remerged and base images and show it
 		top = np.concatenate((rm,dst), axis = 1); mid1 = np.concatenate((rm2,dst2), axis = 1); mid2 = np.concatenate((rm3,dst3), axis = 1)
 		mid3 = np.concatenate((rm4,dst4), axis = 1); bot = np.concatenate((rm5,dst5), axis = 1)
 		grid = np.concatenate((top, mid1, mid2, mid3, bot), axis=0)
 		cv2.imshow("Merged comparison", grid)
 
+		#show summed split channels
+		#cv2.imshow("summed channels", (r+g+b)*6)
 
 		#breakpoint
 		if cv2.waitKey(1) == 27:
@@ -151,7 +160,7 @@ def show_webcam(mirror=False, mobile = False):
 
 #main function
 def main():
-	show_webcam(mirror=False, mobile=True)
+	show_webcam(mirror=False, mobile=False)
 
 '''run on startup'''
 if __name__ == '__main__':
