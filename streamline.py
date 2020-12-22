@@ -186,9 +186,6 @@ def show_webcam(mirror=False, mobile = False):
 											 	 	 hstack((r4,	g4,	b4,	zeros((dst.shape[0],3,3),	np.uint8),	merge4,		base4)),
 											 	 	 hstack((r5,	g5,	b5,	zeros((dst.shape[0],3,3),	np.uint8),	merge5,		base5)))))
 
-		#show summed split channels
-		#cv2.imshow("summed channels", (r+g+b)*6)
-
 		#breakpoint
 		if cv2.waitKey(1) == 27:
 			break  # esc to quit
