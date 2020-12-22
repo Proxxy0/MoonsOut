@@ -91,17 +91,27 @@ def putText(img,text):
 					font, fontScale, fontColor,
 					lineType)
 
-def splitFilter(b,g,r, actions = None, desc = None):
+'''splits an image into color channels, applies filters to each channel and base,
+remerges channels and converts colorspaces of each channel, returning each
+variation'''
+def splitFilter(img, actions = None, desc = None):
+	base  = img.copy()
+	b,g,r = cv2.split(img)
+
+	s = "Base"
 	bs = "Blue"
 	gs = "Green"
 	rs = "Red"
 	ms = "Merged"
+
 	if(actions != None):
 		for action in actions:
+			base = action(base)
 			b = action(b)
 			g = action(g)
 			r = action(r)
 
+		s+=" | "+desc
 		bs+=" | "+desc
 		gs+=" | "+desc
 		rs+=" | "+desc
@@ -109,29 +119,32 @@ def splitFilter(b,g,r, actions = None, desc = None):
 
 	m = cv2.merge([b,g,r])
 
-
 	b = cv2.cvtColor(b, cv2.COLOR_GRAY2BGR)
 	g = cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
 	r = cv2.cvtColor(r, cv2.COLOR_GRAY2BGR)
 
+	base = putText(base,s)
 	b = putText(b,bs)
 	g = putText(g,gs)
 	r = putText(r,rs)
 	m = putText(m,ms)
 
-	return b,g,r,m
+	return base,b,g,r,m
 
+'''applies filters and adds a caption to an image'''
 def filter(img, actions = None, desc = None):
+	base = img.copy()
+
 	s = "Base"
 	if(actions != None):
 		for action in actions:
-			img = action(img)
+			base = action(base)
 
 		s+=" | "+desc
 
-	img = putText(img,s)
+	base = putText(base,s)
 
-	return img
+	return base
 
 
 
@@ -156,48 +169,22 @@ def show_webcam(mirror=False, mobile = False):
 		else: samples[i] = img
 		i=(i+1)%gate
 
-
-
 		#stacks samples
-		dst = rescale(stack(samples),height = 200)
+		dst = rescale(stack(samples),height = 180)
 
 		#split channels and apply transforms
-		b,g,r = cv2.split(dst)
-		b2,g2,r2,rm2 = splitFilter(b,g,r, actions = [brightContrast], desc = "Cont. boost")
-		b3,g3,r3,rm3 = splitFilter(b,g,r, actions = [normalize], desc = "Norm.")
-		b4,g4,r4,rm4 = splitFilter(b,g,r, actions = [doubleGC], desc = "DGC")
-		b5,g5,r5,rm5 = splitFilter(b,g,r, actions = [doubleGC,normalize], desc = "DGC Norm.")
-
-		#remerge channels and apply transforms to base
-		rm = cv2.merge([b,g,r])
-		dst2 = filter(dst, actions = [brightContrast], desc = "Cont. boost")
-		dst3 = filter(dst, actions = [normalize], desc = "Norm.")
-		dst4 = filter(dst, actions = [doubleGC], desc = "DGC")
-		dst5 = filter(dst, actions = [doubleGC,normalize], desc = "DGC Norm.")
-
-		#caption the feeds
-		b = cv2.cvtColor(b, cv2.COLOR_GRAY2BGR)
-		g = cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
-		r = cv2.cvtColor(r, cv2.COLOR_GRAY2BGR)
-		r=putText(r,'Red'); g=putText(g,'Green'); b=putText(b,'Blue')
-		rm=putText(rm,"RGB Merged")
-		dst=putText(dst,"Base")
-
-
+		base1,b1,g1,r1,merge1 = splitFilter(dst)
+		base2,b2,g2,r2,merge2 = splitFilter(dst, actions = [brightContrast], 	desc = "Cont. boost")
+		base3,b3,g3,r3,merge3 = splitFilter(dst, actions = [normalize], 		desc = "Norm.")
+		base4,b4,g4,r4,merge4 = splitFilter(dst, actions = [doubleGC],			desc = "DGC")
+		base5,b5,g5,r5,merge5 = splitFilter(dst, actions = [doubleGC,normalize],desc = "DGC Norm.")
 
 		#create grid of images from split channels and show it
-		cv2.imshow("MoonsOut | Dark Vision", vstack((hstack((r,		g,	b,	zeros((dst.shape[0],3,3),	np.uint8),	rm,		dst)),
-											 		 hstack((r2,	g2,	b2,	zeros((dst2.shape[0],3,3),	np.uint8),	rm2,	dst2)),
-											 	 	 hstack((r3,	g3,	b3,	zeros((dst3.shape[0],3,3),	np.uint8),	rm3,	dst3)),
-											 	 	 hstack((r4,	g4,	b4,	zeros((dst4.shape[0],3,3),	np.uint8),	rm4,	dst4)),
-											 	 	 hstack((r5,	g5,	b5,	zeros((dst5.shape[0],3,3),	np.uint8),	rm5,	dst5)))))
-
-		# #create grid of images from remerged and base images and show it
-		# cv2.imshow("Merged comparison", vstack((hstack((rm,		dst)),
-		# 									 	hstack((rm2,	dst2)),
-		# 									 	hstack((rm3,	dst3)),
-		# 									 	hstack((rm4,	dst4)),
-		# 									 	hstack((rm5,	dst5)))))
+		cv2.imshow("MoonsOut | Dark Vision", vstack((hstack((r1,	g1,	b1,	zeros((dst.shape[0],3,3),	np.uint8),	merge1,		base1)),
+											 		 hstack((r2,	g2,	b2,	zeros((dst.shape[0],3,3),	np.uint8),	merge2,		base2)),
+											 	 	 hstack((r3,	g3,	b3,	zeros((dst.shape[0],3,3),	np.uint8),	merge3,		base3)),
+											 	 	 hstack((r4,	g4,	b4,	zeros((dst.shape[0],3,3),	np.uint8),	merge4,		base4)),
+											 	 	 hstack((r5,	g5,	b5,	zeros((dst.shape[0],3,3),	np.uint8),	merge5,		base5)))))
 
 		#show summed split channels
 		#cv2.imshow("summed channels", (r+g+b)*6)
