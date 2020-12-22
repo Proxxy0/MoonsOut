@@ -30,6 +30,9 @@ lineType               = 1
 
 
 '''functions'''
+def nothing(x):
+	pass
+
 #adjusts the gamma of an image
 def adjust_gamma(image, gamma=1.0):
 	invGamma = 1.0 / gamma
@@ -82,7 +85,7 @@ def normalize(img):
 
 #inverts, adjusts gamma, and reinverts an image
 def doubleGC(img):
-	return cv2.bitwise_not(adjust_gamma(cv2.bitwise_not(img), 0.1))
+	return cv2.bitwise_not(adjust_gamma(cv2.bitwise_not(img), gamma))
 
 #adds a text overlay to an image
 def putText(img,text):
@@ -150,8 +153,14 @@ def filter(img, actions = None, desc = None):
 
 #shows a live feed of the webcam
 def show_webcam(mirror=False, mobile = False):
+	global alpha, beta, gamma
 	#get the camera to be used
 	cam = cv2.VideoCapture(URL) if mobile else cv2.VideoCapture(0)
+	cv2.namedWindow("MoonsOut | Dark Vision")
+	cv2.createTrackbar('Alpha',"MoonsOut | Dark Vision",100,300,nothing)
+	cv2.createTrackbar('Beta',"MoonsOut | Dark Vision",127,255,nothing)
+	cv2.createTrackbar('Gamma',"MoonsOut | Dark Vision",100,300,nothing)
+
 
 	#initialize sample and index
 	samples = []
@@ -159,6 +168,9 @@ def show_webcam(mirror=False, mobile = False):
 
 	#run continuously until breakpoint is hit
 	while True:
+		alpha = (cv2.getTrackbarPos('Alpha',"MoonsOut | Dark Vision")+1)/100
+		beta = cv2.getTrackbarPos('Beta',"MoonsOut | Dark Vision")-127
+		gamma = (cv2.getTrackbarPos('Gamma',"MoonsOut | Dark Vision")+1)/100
 		#gets a frame from the camera
 		ret_val, img = cam.read()
 		#mirrors image if needed
@@ -170,7 +182,7 @@ def show_webcam(mirror=False, mobile = False):
 		i=(i+1)%gate
 
 		#stacks samples
-		dst = rescale(stack(samples),height = 180)
+		dst = rescale(stack(samples),height = 160)
 
 		#split channels and apply transforms
 		base1,b1,g1,r1,merge1 = splitFilter(dst)
@@ -181,14 +193,15 @@ def show_webcam(mirror=False, mobile = False):
 
 		#create grid of images from split channels and show it
 		cv2.imshow("MoonsOut | Dark Vision", vstack((hstack((r1,	g1,	b1,	zeros((dst.shape[0],3,3),	np.uint8),	merge1,		base1)),
-											 		 hstack((r2,	g2,	b2,	zeros((dst.shape[0],3,3),	np.uint8),	merge2,		base2)),
-											 	 	 hstack((r3,	g3,	b3,	zeros((dst.shape[0],3,3),	np.uint8),	merge3,		base3)),
-											 	 	 hstack((r4,	g4,	b4,	zeros((dst.shape[0],3,3),	np.uint8),	merge4,		base4)),
-											 	 	 hstack((r5,	g5,	b5,	zeros((dst.shape[0],3,3),	np.uint8),	merge5,		base5)))))
+													 hstack((r2,	g2,	b2,	zeros((dst.shape[0],3,3),	np.uint8),	merge2,		base2)),
+													 hstack((r3,	g3,	b3,	zeros((dst.shape[0],3,3),	np.uint8),	merge3,		base3)),
+													 hstack((r4,	g4,	b4,	zeros((dst.shape[0],3,3),	np.uint8),	merge4,		base4)),
+													 hstack((r5,	g5,	b5,	zeros((dst.shape[0],3,3),	np.uint8),	merge5,		base5)))))
 
 		#breakpoint
 		if cv2.waitKey(1) == 27:
 			break  # esc to quit
+
 	cv2.destroyAllWindows()
 
 #main function
