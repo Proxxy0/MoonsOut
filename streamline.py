@@ -14,6 +14,7 @@ __status__ = "development"
 import urllib.request
 import cv2
 import numpy as np
+from pylab import *
 
 '''global values'''
 URL                    = "http://192.168.1.3:8080/video" #ip webcam address
@@ -139,16 +140,18 @@ def show_webcam(mirror=False, mobile = False):
 
 
 		#create grid of images from split channels and show it
-		top = np.concatenate((r,g,b), axis = 1); mid1 = np.concatenate((r2,g2,b2), axis = 1); mid2 = np.concatenate((r3,g3,b3), axis = 1)
-		mid3 = np.concatenate((r4,g4,b4), axis = 1); bot = np.concatenate((r5,g5,b5), axis = 1)
-		grid = np.concatenate((top, mid1, mid2, mid3, bot), axis=0)
-		cv2.imshow("Color channels", grid)
+		cv2.imshow("Color channels", vstack((hstack((r,		g,	b)),
+											 hstack((r2,	g2,	b2)),
+											 hstack((r3,	g3,	b3)),
+											 hstack((r4,	g4,	b4)),
+											 hstack((r5,	g5,	b5)))))
 
 		#create grid of images from remerged and base images and show it
-		top = np.concatenate((rm,dst), axis = 1); mid1 = np.concatenate((rm2,dst2), axis = 1); mid2 = np.concatenate((rm3,dst3), axis = 1)
-		mid3 = np.concatenate((rm4,dst4), axis = 1); bot = np.concatenate((rm5,dst5), axis = 1)
-		grid = np.concatenate((top, mid1, mid2, mid3, bot), axis=0)
-		cv2.imshow("Merged comparison", grid)
+		cv2.imshow("Merged comparison", vstack((hstack((rm,		dst)),
+											 	hstack((rm2,	dst2)),
+											 	hstack((rm3,	dst3)),
+											 	hstack((rm4,	dst4)),
+											 	hstack((rm5,	dst5)))))
 
 		#show summed split channels
 		#cv2.imshow("summed channels", (r+g+b)*6)
