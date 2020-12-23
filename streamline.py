@@ -23,10 +23,10 @@ alpha				   = 3
 beta				   = 0
 gamma				   = 0.1
 font                   = cv2.FONT_HERSHEY_COMPLEX
-bottomLeftCornerOfText = (10,20)
-fontScale              = 0.7
+fontScale              = 2
+bottomLeftCornerOfText = (10*fontScale,30*fontScale)
 fontColor              = (0,0,255)
-lineType               = 1
+lineType               = 1*fontScale
 
 
 '''functions'''
@@ -156,10 +156,11 @@ def show_webcam(mirror=False, mobile = False):
 	global alpha, beta, gamma
 	#get the camera to be used
 	cam = cv2.VideoCapture(URL) if mobile else cv2.VideoCapture(0)
-	cv2.namedWindow("MoonsOut | Dark Vision")
+	cv2.namedWindow("MoonsOut | Dark Vision", flags = cv2.WINDOW_NORMAL)
 	cv2.createTrackbar('Alpha',"MoonsOut | Dark Vision",100,300,nothing)
 	cv2.createTrackbar('Beta',"MoonsOut | Dark Vision",127,255,nothing)
 	cv2.createTrackbar('Gamma',"MoonsOut | Dark Vision",100,300,nothing)
+
 
 
 	#initialize sample and index
@@ -182,7 +183,7 @@ def show_webcam(mirror=False, mobile = False):
 		i=(i+1)%gate
 
 		#stacks samples
-		dst = rescale(stack(samples),height = 160)
+		dst = rescale(stack(samples),scale = 1)
 
 		#split channels and apply transforms
 		base1,b1,g1,r1,merge1 = splitFilter(dst)
@@ -192,11 +193,19 @@ def show_webcam(mirror=False, mobile = False):
 		base5,b5,g5,r5,merge5 = splitFilter(dst, actions = [doubleGC,normalize],desc = "DGC Norm.")
 
 		#create grid of images from split channels and show it
-		cv2.imshow("MoonsOut | Dark Vision", vstack((hstack((r1,	g1,	b1,	zeros((dst.shape[0],3,3),	np.uint8),	merge1,		base1)),
-													 hstack((r2,	g2,	b2,	zeros((dst.shape[0],3,3),	np.uint8),	merge2,		base2)),
-													 hstack((r3,	g3,	b3,	zeros((dst.shape[0],3,3),	np.uint8),	merge3,		base3)),
-													 hstack((r4,	g4,	b4,	zeros((dst.shape[0],3,3),	np.uint8),	merge4,		base4)),
-													 hstack((r5,	g5,	b5,	zeros((dst.shape[0],3,3),	np.uint8),	merge5,		base5)))))
+		grid = vstack((hstack((r1,	g1,	b1,	zeros((dst.shape[0],3,3),	np.uint8),	merge1,		base1)),
+					   hstack((r2,	g2,	b2,	zeros((dst.shape[0],3,3),	np.uint8),	merge2,		base2)),
+					   hstack((r3,	g3,	b3,	zeros((dst.shape[0],3,3),	np.uint8),	merge3,		base3)),
+					   hstack((r4,	g4,	b4,	zeros((dst.shape[0],3,3),	np.uint8),	merge4,		base4)),
+					   hstack((r5,	g5,	b5,	zeros((dst.shape[0],3,3),	np.uint8),	merge5,		base5))))
+
+		cv2.imshow("MoonsOut | Dark Vision", grid)
+
+		# cv2.imshow("selection",cv2.selectROI("MoonsOut | Dark Vision",vstack((hstack((r1,	g1,	b1,	zeros((dst.shape[0],3,3),	np.uint8),	merge1,		base1)),
+		# 											 hstack((r2,	g2,	b2,	zeros((dst.shape[0],3,3),	np.uint8),	merge2,		base2)),
+		# 											 hstack((r3,	g3,	b3,	zeros((dst.shape[0],3,3),	np.uint8),	merge3,		base3)),
+		# 											 hstack((r4,	g4,	b4,	zeros((dst.shape[0],3,3),	np.uint8),	merge4,		base4)),
+		# 											 hstack((r5,	g5,	b5,	zeros((dst.shape[0],3,3),	np.uint8),	merge5,		base5))))))
 
 		#breakpoint
 		if cv2.waitKey(1) == 27:
@@ -206,7 +215,7 @@ def show_webcam(mirror=False, mobile = False):
 
 #main function
 def main():
-	show_webcam(mirror=False, mobile=False)
+	show_webcam(mirror=False, mobile=True)
 
 '''run on startup'''
 if __name__ == '__main__':
