@@ -40,7 +40,7 @@ class Ui(QtWidgets.QDialog):
 
 		self.my_timer = QtCore.QTimer()
 		self.my_timer.timeout.connect(self.updateSelf)
-		self.my_timer.start(1)
+		self.my_timer.start(1e3/30)
 
 		self.sourceButton.clicked.connect(self.swapCam)
 
@@ -121,12 +121,12 @@ class Ui(QtWidgets.QDialog):
 
 	def updateSelf(self):
 		ret_val, frame = self.camera.read()
-
-		if(len(self.samples)<self.gate):
-			self.samples.append(frame)
-		else:
-			self.samples[int(self.i)] = frame
-		self.i=(self.i+1)%self.gate
+		if(ret_val):
+			if(len(self.samples)<self.gate):
+				self.samples.append(frame)
+			else:
+				self.samples[int(self.i)] = frame
+			self.i=(self.i+1)%self.gate
 
 		imgstack = self.stack()
 
