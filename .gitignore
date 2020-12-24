@@ -13,3 +13,5 @@ dubinvgc.png
 background.jpg
 tkpy.py
 audio.py
+
+__pycache__/layout.cpython-38.pyc

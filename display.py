@@ -3,11 +3,13 @@ from PyQt5.QtGui import QPixmap,QImage
 import sys
 import cv2
 import numpy as np
+from layout import Ui_Dialog
 
-class Ui(QtWidgets.QDialog):
-	def __init__(self):
-		super(Ui, self).__init__() # Call the inherited classes __init__ method
-		uic.loadUi('layout.ui', self) # Load the .ui file
+class Ui(QtWidgets.QDialog, Ui_Dialog):
+	def __init__(self, parent=None):
+		super(Ui, self).__init__(parent) # Call the inherited classes __init__ method
+		self.setupUi(self)
+		#uic.loadUi('layout.ui', self) # Load the .ui file
 
 		self.setWindowFlag(QtCore.Qt.WindowMinimizeButtonHint, True)
 		self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, True)
