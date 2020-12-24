@@ -1,0 +1,5 @@
+### if changes to layout.ui
+	pyuic5 layout.ui > layout.py
+
+### if changes to either layout.ui/.py or display.py
+	pyinstaller.exe --onefile --windowed display.py
