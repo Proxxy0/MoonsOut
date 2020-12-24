@@ -9,6 +9,9 @@ class Ui(QtWidgets.QDialog):
 		super(Ui, self).__init__() # Call the inherited classes __init__ method
 		uic.loadUi('layout.ui', self) # Load the .ui file
 
+		self.setWindowFlag(QtCore.Qt.WindowMinimizeButtonHint, True)
+		self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, True)
+
 		self.filbox = ['Default','Brightness/Contrast Boost','Gamma Boost','Normalize','Double Inverted Gamma Correction (DGC)', 'DGC Normalize']
 		self.cambox = ['Base','Red','Green','Blue','Remerged']
 		self.filterBox.addItems(self.filbox)
@@ -155,10 +158,12 @@ class Ui(QtWidgets.QDialog):
 		elif (camInd == 4): #remerged
 			img = m
 
+
 		height, width, channel = img.shape
 		bytesPerLine = 3 * width
 		qImg = QImage(img.data, width, height, bytesPerLine, QImage.Format_BGR888)
-		map = QPixmap(qImg)
+		map = QPixmap(qImg).scaled(self.display.size(), QtCore.Qt.KeepAspectRatio,
+                                          		   		QtCore.Qt.SmoothTransformation)
 
 		self.display.setPixmap(map)
 
@@ -168,7 +173,8 @@ class Ui(QtWidgets.QDialog):
 		if(self.isNumber(self.brightnessLine.text())):
 			self.beta = float(self.brightnessLine.text())
 		if(self.isNumber(self.gammaLine.text())):
-			self.gamma = float(self.gammaLine.text())
+			if(float(self.gammaLine.text())!=0):
+				self.gamma = float(self.gammaLine.text())
 		if(self.isNumber(self.gateLine.text())):
 			if(int(self.gateLine.text())>0):
 				if(self.gate!=int(self.gateLine.text())):
